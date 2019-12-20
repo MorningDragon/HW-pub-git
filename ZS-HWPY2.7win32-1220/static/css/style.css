@@ -1,0 +1,55 @@
+.topBar{
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 8%;
+}
+.navbar {
+    height: 60px;
+    border: 0;
+    border-radius: 0;
+    /*background: #1b1e21;*/
+}
+.toolbar {
+    background: rgba(255, 255, 255, 0.4);
+    padding: 5px 10px 5px 10px;
+    border-radius: 4px;
+    position: absolute;
+    top: 10%;
+    left: 10px;
+    display: none;
+    width: auto;
+    height: auto;
+}
+.toolbar-large {
+    background: rgba(42, 42, 42, 0.2);
+    padding: 1px;
+    border-radius: 4px;
+    position: absolute;
+    top: 10%;
+    left: 10px;
+    display: none;
+    width: 280px;
+    height: 520px;
+}
+.toolbar input {
+    vertical-align: middle;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+.removeDiv{
+    display: none;
+}
+
+/*.close-panel{*/
+/*    width: 16px;*/
+/*    height: 16px;*/
+/*    margin-top: 24px;*/
+/*    float: right;*/
+/*    background: no-repeat;*/
+/*    !*background-image: url("");*!*/
+/*    background-size: 16px;*/
+/*    cursor: pointer;*/
+/*    opacity: 0.8;*/
+/*}*/
+

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"/>
+    <title>First 3D Scene!</title>
+    <script type=text/javascript src="../static/js/jquery-2.0.0.js"></script>
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.css">
+    <script src="../static/bootstrap/js/bootstrap.js"></script>
+    <script src="../static/Build/Cesium/Cesium.js"></script>
+    <link rel="stylesheet" href="../static/css/style.css">
+{#    <link rel="stylesheet" href="../static/css/style1.css">#}
+
+    <style>
+        @import url(../static/Build/Cesium/Widgets/widgets.css);
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+        .cesium-viewer-toolbar{
+            position: absolute;
+            top: 16%;
+            right: 0.5%;
+            z-index: 44;
+        }
+    </style>
+
+</head>
+<body>
+<div id="cesiumContainer"></div>
+//格网显示
+{#<div id="drawDQGDiv" style="position: absolute;right: 1%;top: 10%;">#}
+{#    <button id="drawDQG" style="background: url('../static/data/code.png'); padding: 0;margin: 0;border: 0;height: 25px;width: 25px;border-radius: 10%"></button>#}
+{#</div>#}
+{#<div class="btn-group-vertical" style="position: absolute;top: 20%;right: 5%">#}
+{#    <button id="drawDQG" type="button" class="btn btn-default">DQG</button>#}
+{#    <button id="drawMultiScaleDQG" type="button" class="btn btn-default">多尺度二维</button>#}
+{#    <button id="drawMorton" type="button" class="btn btn-default">编码显示</button>#}
+{#    <button id="drawThreeDimensionDQG" type="button" class="btn btn-default">三维格网</button>#}
+{#    <button id="drawStaticThreeDimensionDQG" type="button" class="btn btn-default">静态三维</button>#}
+{#    <button id="drawTileMessage" type="button" class="btn btn-default">退出</button>#}
+{#</div>#}
+{#<div id="drawTrack">#}
+{#    <button style="position: absolute;right: 1%;top: 35%;height: 25px;width: 75px;border-radius: 10%">绘制轨迹</button>#}
+{#</div>#}
+{#<div id="clearTrack">#}
+{#    <button style="position: absolute;left: 1%;top: 10%;height: 25px;width: 75px;border-radius: 10%">退出轨迹</button>#}
+{#</div>#}
+{#<div >#}
+{#    <button id="drawTrail" style="position: absolute;right: 1%;top: 30%;height: 25px;width: 25px;border-radius: 10%"></button>#}
+{#</div>#}
+//航迹移除
+<div id="removeflyDiv" class="removeDiv" style="position: absolute;right: 3%;top: 10%;">
+    <button id="removefly" style="background: url('../static/data/fly.png'); padding: 0;margin: 0;border: 0;height: 25px;width: 25px;border-radius: 10%"></button>
+</div>
+//临近移除
+<div id="removetaxiDiv" class="removeDiv" style="position: absolute;right: 5%;top: 10%;">
+    <button id="removetaxi" style="background: url('../static/data/taxi.png'); padding: 0;margin: 0;border: 0;height: 25px;width: 25px;border-radius: 10%"></button>
+</div>
+//相似移除
+<div id="removelineDiv" class="removeDiv" style="position: absolute;right: 5%;top: 10%;">
+    <button id="removeline"  style="background: url('../static/data/taxi.png'); padding: 0;margin: 0;border: 0;height: 25px;width: 25px;border-radius: 10%"></button>
+</div>
+//右下角经纬度
+<div id="latlng_show" style="width:440px;height:30px;position:absolute;bottom:40px;right:40px;z-index:3;font-size:15px;">
+    <div style="width:150px;height:30px;float:left;">
+        <font size="3" color="white">经度：<span id="longitude_show"></span></font>
+    </div>
+    <div style="width:150px;height:30px;float:left;">
+        <font size="3" color="white">纬度：<span id="latitude_show"></span></font>
+    </div>
+    <div style="width:140px;height:30px;float:left;">
+        <font size="3" color="white">视角高：<span id="altitude_show"></span>km</font>
+    </div>
+</div>
+//顶部导航栏
+<div class="topBar">
+<nav class="navbar navbar-inverse"  role="navigation">
+    <div class="container-fluid" style="margin: 5px">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand" style="font-size: 26px" >时空格网城市流演示系统</a>
+        </div>
+        <!--<div>-->
+            <!--<p class="navbar-text">万物复联</p>-->
+        <!--</div>-->
+        <ul class="nav navbar-nav navbar-right ">
+            <li><a href="#"><span class="glyphicon glyphicon-user"></span>注册</a></li>
+            <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>登录</a></li>
+        </ul>
+        <ul class="nav navbar-nav " style="font-size: 20px;position: absolute;right: 30%">
+            <li class="dropdown">
+                <a data-target="#" class="dropdown-toggle" data-toggle="dropdown">
+                    应用场景
+                    <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li id="flight_show" onclick="fly()"><a href="#">航迹</a></li>
+                    <li class="divider"></li>
+                    <li id="city_show" onclick="fly2city()"><a href="#">城市</a></li>
+                    <li class="divider"></li>
+                    <li id="_show"><a href="#">园区</a></li>
+
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a data-target="#" class="dropdown-toggle" data-toggle="dropdown">
+                    基础功能
+                    <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li id="Code2Mtn_show"><a href="#">格网编码转换</a></li>
+                    <li class="divider"></li>
+                    <li id="disMea_show"><a href="#">距离计算</a></li>
+                    <li class="divider"></li>
+                    <li id="AngMea_show"><a href="#">方位计算</a></li>
+                    <li class="divider"></li>
+                    <li id="neaSearch_show"><a href="#">邻近查询</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a data-target="#" class="dropdown-toggle" data-toggle="dropdown">
+                    分析
+                    <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li id="xiangsi_show" onclick="showData()"><a href="#">轨迹相似</a></li>
+                    <li class="divider"></li>
+                    <li id="linjin_show" ><a data-target="#">邻近分析</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>
+</div>
+//侧边栏
+//工具栏
+<div class="toolbar" id="xiangsiDiv">
+    <span style="float: right" id="xiangsi-close" onclick="removeData()" class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+    <div style="margin-top: 20px" class="panel panel-default">
+  <!-- Default panel contents -->
+  <div class="panel-heading">轨迹相似性分析</div>
+  <!-- Table -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                <th>轨迹</th>
+                <th>ID</th>
+                <th>相似度</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="info">
+                <th scope="row"></th> <td>目标轨迹</td> <td><a id="Target-trajectory" href="#"></a></td> <td><a href="#">--</a></td>
+            </tr>
+            <tr class="warning">
+                <th scope="row">1</th> <td>相似轨迹</td> <td><a id="Similar-trajectories1" href="#"></a></td> <td><a id="Track-similarity1" href="#"></a></td>
+            </tr>
+            <tr class="warning">
+                <th scope="row">2</th> <td>相似轨迹</td> <td><a id="Similar-trajectories2" href="#"></a></td> <td><a id="Track-similarity2" href="#"></a></td>
+            </tr>
+            <tr class="warning">
+                <th scope="row">3</th> <td>相似轨迹</td> <td><a id="Similar-trajectories3" href="#"></a></td> <td><a id="Track-similarity3" href="#"></a></td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+</div>
+//基础功能：距离计算
+{#<div class="toolbar" id="disMea_div">#}
+{#    <form id="dismeature" method="" class="form-horizontal" role="form">#}
+{#        <div class="form-group">#}
+{#            <div class="col-sm-12">#}
+{#                <button id="disMea_close" type="button" class="close"  aria-hidden="ture">&times;</button>#}
+{#            </div>#}
+{#            <label for=""  class="text-primary col-sm-4 control-label">距离计算</label>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="codeA" class="col-sm-3 control-label">起点</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="codeA" name="codeA" type="text" class="form-control input-sm"  placeholder="请输入起始编码"#}
+{#                >#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="codeB" class="col-sm-3 control-label">终点</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="codeB" name="codeB" type="text" class="form-control input-sm"  placeholder="请输入终点编码"#}
+{#                >#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="" class="col-sm-3 control-label">尺度</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="scaleA" name="scaleA" type="text" class="form-control input-sm"  placeholder="请输入格元尺度"#}
+{#                >#}
+{#                <br>#}
+{#                <input id="scaleB" name="scaleB" type="text" class="form-control input-sm"  placeholder="请输入格元尺度"#}
+{#                >#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <div class="col-sm-offset-2 col-sm-10">#}
+{#                <button id="searchbtn" type="button" class="btn btn-default btn-xs">查询</button>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="" class="col-sm-3 control-label">结果</label>#}
+{#            <textarea name="disResult" id="disResult" cols="20" rows="2"></textarea>#}
+{##}
+{#        </div>#}
+{#    </form>#}
+{#</div>#}
+{#//基础功能：方位计算#}
+{#<div class="toolbar" id="AngMea_div">#}
+{#    <form id="Angmeature" method="" class="form-horizontal" role="form">#}
+{#        <div class="form-group">#}
+{#            <div class="col-sm-12">#}
+{#                <button id="AngMea_close" type="button" class="close"  aria-hidden="true">&times;</button>#}
+{#            </div>#}
+{#            <label for="" class="text-primary col-sm-4 control-label">方位计算</label>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="codeA" class="col-sm-3 control-label">起点</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="codeA" name="codeA" type="text" class="form-control input-sm"  placeholder="请输入起始编码">#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="codeB" class="col-sm-3 control-label">终点</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="codeB" name="codeB" type="text" class="form-control input-sm"  placeholder="请输入终点编码">#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="" class="col-sm-3 control-label">尺度</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="scaleA" name="scaleA" type="text" class="form-control input-sm"  placeholder="请输入格元尺度">#}
+{#                <br>#}
+{#                <input id="scaleB" name="scaleB" type="text" class="form-control input-sm"  placeholder="请输入格元尺度">#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <div class="col-sm-offset-2 col-sm-10">#}
+{#                <button id="Ang_searchbtn" type="button" class="btn btn-default btn-xs">查询</button>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="" class="col-sm-3 control-label">结果</label>#}
+{#            <textarea name="AngResult" id="AngResult" cols="20" rows="2"></textarea>#}
+{#        </div>#}
+{#    </form>#}
+{##}
+{#</div>#}
+{#//基础功能：编码查询#}
+{#<div class="toolbar-large" id="Code2Mtn_div">#}
+{#    <form id="Code2Mtn" method="" class="form-horizontal" role="form">#}
+{#        <div class="form-group">#}
+{#            <div class="col-sm-12">#}
+{#                <button id="Code2Mtn_close" type="button" class="close"  aria-hidden="true">&times;</button>#}
+{#            </div>#}
+{#            <label for="" class="text-primary col-sm-4 control-label">编码查询</label>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="codeA" class="col-sm-3 control-label">经度</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="codeA" name="codeA" type="text" class="form-control input-sm"  placeholder="左上角经度"#}
+{#                >#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="codeB" class="col-sm-3 control-label">纬度</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="codeB" name="codeB" type="text" class="form-control input-sm"  placeholder="左上角纬度">#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="" class="col-sm-3 control-label">左上角</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="scaleA" name="scaleA" type="text" class="form-control input-sm"  placeholder="经度变化大小">#}
+{#                <br>#}
+{#                <input id="scaleB" name="scaleB" type="text" class="form-control input-sm"  placeholder="纬度变化大小">#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="" class="col-sm-3 control-label">待求</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="scaleA" name="scaleA" type="text" class="form-control input-sm"  placeholder="经度">#}
+{#                <br>#}
+{#                <input id="scaleB" name="scaleB" type="text" class="form-control input-sm"  placeholder="纬度">#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="" class="col-sm-3 control-label">尺度</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="scaleA" name="scaleA" type="text" class="form-control input-sm"  placeholder="尺度">#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <div class="col-sm-offset-2 col-sm-10">#}
+{#                <button id="Code2Mtn_searchbtn" type="button" class="btn btn-default btn-xs">查询</button>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="" class="col-sm-3 control-label">结果</label>#}
+{#            <textarea name="Code2MtnResult" id="Code2MtnResult" cols="20" rows="2"></textarea>#}
+{##}
+{#        </div>#}
+{#    </form>#}
+{##}
+{#</div>#}
+{#//邻近查询#}
+{#<div class="toolbar" id="neaSearch_div">#}
+{#    <form id="neaSearch" method="" class="form-horizontal" role="form">#}
+{#        <div class="form-group">#}
+{#            <div class="col-sm-12">#}
+{#                <button id="neaSearch_close" type="button" class="close"  aria-hidden="ture">&times;</button>#}
+{#            </div>#}
+{#            <label for=""  class="text-primary col-sm-4 control-label">邻近查询</label>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="neaCode" class="col-sm-3 control-label">编码</label>#}
+{#            <div class="col-sm-6">#}
+{#                <input id="neaCode" name="neaCode" type="text" class="form-control input-sm"  placeholder="请输入格网编码"#}
+{#                >#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <div class="col-sm-offset-2 col-sm-10">#}
+{#                <button id="neaSearch_btn" type="button" class="btn btn-default btn-xs">查询</button>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="form-group">#}
+{#            <label for="" class="col-sm-3 control-label">结果</label>#}
+{#            <textarea name="neaSearch_Result" id="neaSearch_Result" cols="20" rows="8"></textarea>#}
+{##}
+{#        </div>#}
+{#    </form>#}
+{#</div>#}
+
+<script src="../static/js/view.js"></script>
+{#<script src="../static/js/flight.js"></script>#}
+{#<script src="../static/js/funcSum.js"></script>#}
+{#<script src="../static/js/taxiLine.js"></script>#}
+{#<script src="../static/js/taxi.js"></script>#}
+{#<script src="../static/js/tile.js"></script>#}
+
+//格网绘制
+<script src="../static/DQG/TileMath.js"></script>
+<script src="../static/DQG/TileFunction.js"></script>
+<script src="../static/DQG/QuadTile.js"></script>
+<script src="../static/DQG/TriangleTile.js"></script>
+<script src="../static/DQG/TileStart.js"></script>
+<script src="../static/DQG/FunctionStart.js"></script>
+<script src="../static/js/czml.js"></script>
+<script src="../static/js/control.js"></script>
+{#<script src="../static/js/clickOject.js"></script>#}
+</body>
+</html>
